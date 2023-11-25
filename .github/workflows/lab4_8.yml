@@ -1,0 +1,40 @@
+name: Auto Merge on PR Approval and Tests Pass
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - review_requested
+
+jobs:
+  auto_merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: npm install  # 或者你的项目中的其他构建和测试命令
+
+      - name: Run tests
+        run: npm test  # 替换为你的测试命令
+
+      - name: Auto Merge PR
+        if: success() && github.event_name == 'pull_request' && github.event.action == 'synchronize'
+        run: |
+          TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          BRANCH="${{ github.head_ref }}"
+          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/merge"
+
+          echo "Merging PR..."
+          curl -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$API_URL"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
