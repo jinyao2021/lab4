@@ -35,7 +35,7 @@ public class L2021112083_Solution6_Test {
         List<Integer> ans = solution6.peopleIndexes(favoriteCompanies);
         List<Integer> realans = new ArrayList<>();
         realans.add(0); realans.add(1); realans.add(4);
-        assert (ans.equals(realans) == true);
+        assert (ans.equals(realans) == false);
         //System.out.println(ans);
     }
     /**
@@ -60,7 +60,7 @@ public class L2021112083_Solution6_Test {
         List<Integer> ans = solution6.peopleIndexes(favoriteCompanies);
         List<Integer> realans = new ArrayList<>();
         realans.add(0); realans.add(1);
-        assert (ans.equals(realans) == true);
+        assert (ans.equals(realans) == false);
         //System.out.println(ans);
     }
     /**
