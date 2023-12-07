@@ -1,49 +1,27 @@
-name: Auto Merge on PR Approval and Tests Pass
-
+name: Automerge
 on:
   pull_request:
     types:
-      - opened
+      - labeled
+      - unlabeled
       - synchronize
+      - opened
+      - edited
+      - ready_for_review
       - reopened
-      - review_requested
-
+      - unlocked
+  pull_request_review:
+    types:
+      - submitted
+  status: {}
 jobs:
-  auto_merge:
+  automerge:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
-      - name: Auto Merge PR
-        if: success() && github.event_name == 'pull_request' && github.event.action == 'synchronize'
-        run: |
-          TOKEN="${{ secrets.GITHUB_TOKEN }}"
-          BRANCH="${{ github.head_ref }}"
-          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}"
-
-          # Check if the PR is mergeable and has been approved
-          PR_MERGEABLE=$(curl -s -X GET -H "Authorization: Bearer $TOKEN" "$API_URL" | jq -r '.mergeable')
-          PR_APPROVED=$(curl -s -X GET -H "Authorization: Bearer $TOKEN" "$API_URL/reviews" | jq -r 'any(.state=="APPROVED")')
-
-          if [ "$PR_MERGEABLE" == "true" ] && [ "$PR_APPROVED" == "true" ]; then
-            # Merge the PR
-            echo "Merging PR..."
-            curl -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$API_URL/merge"
-          else
-            echo "PR is not mergeable or not approved. Skipping auto-merge."
-          fi
+      - name: automerge
+        uses: "pascalgn/automerge-action@629929da409181990e4e638dcf84a74e11d3af66"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          MERGE_LABELS: "automerge,!work in progress"
+          MERGE_METHOD: "squash"
+          MERGE_COMMIT_MESSAGE: "pull-request-title"
