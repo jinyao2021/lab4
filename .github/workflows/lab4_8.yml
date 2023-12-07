@@ -22,19 +22,28 @@ jobs:
           node-version: 14
 
       - name: Install dependencies
-        run: npm install  # 或者你的项目中的其他构建和测试命令
+        run: npm install
 
       - name: Run tests
-        run: npm test  # 替换为你的测试命令
+        run: npm test
 
       - name: Auto Merge PR
         if: success() && github.event_name == 'pull_request' && github.event.action == 'synchronize'
         run: |
           TOKEN="${{ secrets.GITHUB_TOKEN }}"
           BRANCH="${{ github.head_ref }}"
-          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/merge"
+          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}"
 
-          echo "Merging PR..."
-          curl -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$API_URL"
+          # Check if the PR is mergeable and has been approved
+          PR_MERGEABLE=$(curl -s -X GET -H "Authorization: Bearer $TOKEN" "$API_URL" | jq -r '.mergeable')
+          PR_APPROVED=$(curl -s -X GET -H "Authorization: Bearer $TOKEN" "$API_URL/reviews" | jq -r 'any(.state=="APPROVED")')
+
+          if [ "$PR_MERGEABLE" == "true" ] && [ "$PR_APPROVED" == "true" ]; then
+            # Merge the PR
+            echo "Merging PR..."
+            curl -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$API_URL/merge"
+          else
+            echo "PR is not mergeable or not approved. Skipping auto-merge."
+          fi
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
