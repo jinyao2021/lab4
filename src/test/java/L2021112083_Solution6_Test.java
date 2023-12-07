@@ -36,7 +36,7 @@ public class L2021112083_Solution6_Test {
         List<Integer> realans = new ArrayList<>();
         realans.add(0); realans.add(1); realans.add(4);
         assert (ans.equals(realans) == true);
-        System.out.println(ans);
+        //System.out.println(ans);
     }
     /**
      * 示例 2：有子集但顺序略有不同
