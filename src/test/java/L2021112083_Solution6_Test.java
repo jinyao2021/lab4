@@ -89,7 +89,7 @@ public class L2021112083_Solution6_Test {
         List<Integer> realans = new ArrayList<>();
         realans.add(0); realans.add(1); realans.add(2);realans.add(3);
         assert (ans.equals(realans) == true);
-        //System.out.println(ans);
+        System.out.println(ans);
     }
     /**
      * 示例 4：favoriteCompanies为空
